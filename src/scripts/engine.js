@@ -1,65 +1,58 @@
-const state = {
-  view: {
-    squares: document.querySelectorAll(".square"),
-    enemy: document.querySelector(".enemy"),
-    timeLeft: document.querySelector("#time-left"),
-    score: document.querySelector("#score"),
-  },
-  values: {
-    gameVelocity: 1000,
-    hitPosition: 0,
-    result: 0,
-    curretTime: 60,
-  },
-  actions: {
-    timerId: setInterval(randomSquare, 1000),
-    countDownTimerId: setInterval(countDown, 1000),
-  },
-};
+const emojis = [
+  "🐱",
+  "🐱",
+  "🦝",
+  "🦝",
+  "🦊",
+  "🦊",
+  "🐶",
+  "🐶",
+  "🐵",
+  "🐵",
+  "🦁",
+  "🦁",
+  "🐯",
+  "🐯",
+  "🐮",
+  "🐮",
+];
+let openCards = [];
 
-function countDown() {
-  state.values.curretTime--;
-  state.view.timeLeft.textContent = state.values.curretTime;
+let shuffleEmojis = emojis.sort(() => (Math.random() > 0.5 ? 2 : -1));
 
-  if (state.values.curretTime <= 0) {
-    clearInterval(state.actions.countDownTimerId);
-    clearInterval(state.actions.timerId);
-    alert("Game Over! O seu resultado foi: " + state.values.result);
+for (let i = 0; i < emojis.length; i++) {
+  let box = document.createElement("div");
+  box.className = "item";
+  box.innerHTML = shuffleEmojis[i];
+  box.onclick = handleClick;
+  document.querySelector(".game").appendChild(box);
+}
+
+function handleClick() {
+  if (openCards.length < 2) {
+    this.classList.add("boxOpen");
+    openCards.push(this);
+  }
+
+  if (openCards.length == 2) {
+    setTimeout(checkMatch, 500);
+  }
+
+  console.log(openCards);
+}
+
+function checkMatch() {
+  if (openCards[0].innerHTML === openCards[1].innerHTML) {
+    openCards[0].classList.add("boxMatch");
+    openCards[1].classList.add("boxMatch");
+  } else {
+    openCards[0].classList.remove("boxOpen");
+    openCards[1].classList.remove("boxOpen");
+  }
+
+  openCards = [];
+
+  if (document.querySelectorAll(".boxMatch").length === emojis.length) {
+    alert("Você venceu !");
   }
 }
-
-function playSound(audioName) {
-  let audio = new Audio(`./src/audios/${audioName}.m4a`);
-  audio.volume = 0.2;
-  audio.play();
-}
-
-function randomSquare() {
-  state.view.squares.forEach((square) => {
-    square.classList.remove("enemy");
-  });
-
-  let randomNumber = Math.floor(Math.random() * 9);
-  let randomSquare = state.view.squares[randomNumber];
-  randomSquare.classList.add("enemy");
-  state.values.hitPosition = randomSquare.id;
-}
-
-function addListenerHitBox() {
-  state.view.squares.forEach((square) => {
-    square.addEventListener("mousedown", () => {
-      if (square.id === state.values.hitPosition) {
-        state.values.result++;
-        state.view.score.textContent = state.values.result;
-        state.values.hitPosition = null;
-        playSound("hit");
-      }
-    });
-  });
-}
-
-function initialize() {
-  addListenerHitBox();
-}
-
-initialize();
